@@ -1,6 +1,7 @@
 from logging.config import fileConfig
+from typing import Union
 
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import MetaData, Table, engine_from_config, pool
 
 from alembic import context
 
@@ -22,7 +23,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = metadata_to_migrate
+target_metadata: MetaData = metadata_to_migrate
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -36,6 +37,14 @@ def include_object(object, name, type_, reflected, compare_to):
         if type_ == 'table' and name != table_name:
             return False
     return True
+
+
+def narrow_target_metadata(table_name: str) -> None:
+    table_instance: Union[Table, None] = None
+    if table_name in target_metadata.tables.keys():
+        table_instance = target_metadata.tables[table_name]
+        target_metadata.clear()
+        target_metadata._add_table(name=table_instance.name, schema=None, table=table_instance)
 
 
 def run_migrations_offline() -> None:
@@ -88,6 +97,9 @@ def run_migrations_online() -> None:
         with context.begin_transaction():
             context.run_migrations()
 
+
+if x_kwargs.get('table'):
+    narrow_target_metadata(x_kwargs['table'])
 
 if context.is_offline_mode():
     run_migrations_offline()
