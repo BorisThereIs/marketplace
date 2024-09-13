@@ -13,7 +13,7 @@ class Product(BaseTimeStampedModel):
     name = Column(String(100), nullable=False)
     sku = Column(String(64), nullable=False)
     category_id = Column(ForeignKey(Category.id), nullable=False)
-    categories = relationship(argument=List[Category], back_populates='product')
+    category = relationship(argument=Category, back_populates='products')
     shop_id = Column(ForeignKey(Shop.id), nullable=False)
     shop = relationship(argument=Shop)
     description = Column(String(250), nullable=True)
