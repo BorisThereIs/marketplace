@@ -10,6 +10,7 @@ python-dotenv = "*"
 ipython = "*"
 fastapi = {extras = ["standard"], version = "*"}
 alembic = "*"
+faker = "*"
 
 [dev-packages]
 
