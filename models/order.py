@@ -67,5 +67,5 @@ class OrderLine(BaseTimeStampedModel):
     @validates('quantity', 'product_quantity')
     def validate_quantity(self, attribut_name, quantity):
         if quantity < 1:
-            raise ValueError('product quantity should be more or equal 1')
+            raise ValueError(f'{attribut_name} should be more or equal 1')
         return quantity
