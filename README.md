@@ -1,6 +1,10 @@
 ## Marketplace
 
-.. description in progess
+a simplified backend for a marketplace-like app.
+
+#### Order processing flow
+
+
 
 #### Alembic 
 
