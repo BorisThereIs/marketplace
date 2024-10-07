@@ -16,3 +16,7 @@ CONN_STRING = 'postgresql+psycopg2://'\
                 f'{DATABASE["user"]}:{DATABASE["password"]}'\
                 f'@{DATABASE["host"]}:{DATABASE["port"]}'\
                 f'/{DATABASE["dbname"]}'
+
+MESSAGE_BROKER = {
+    'host': os.environ.get('RABBIT_HOST', 'localhost'),
+}

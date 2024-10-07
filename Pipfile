@@ -11,6 +11,7 @@ ipython = "*"
 fastapi = {extras = ["standard"], version = "*"}
 alembic = "*"
 faker = "*"
+pika = "*"
 
 [dev-packages]
 
