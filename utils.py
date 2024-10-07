@@ -3,6 +3,8 @@ from sqlalchemy import insert
 from models.user import User
 from datetime import date, timedelta
 from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from config import settings
 
 
 def populate_user_model(session: Session, num_of_records: int = 1) -> None:
@@ -20,3 +22,7 @@ def populate_user_model(session: Session, num_of_records: int = 1) -> None:
         }
         records_to_insert.append(record)
     session.execute(insert(User), records_to_insert)
+
+def get_db_session(expire_on_commit: bool = True, echo: bool = False) -> Session:
+    engine = create_engine(settings.CONN_STRING, echo=echo)
+    return Session(engine, expire_on_commit=expire_on_commit)
