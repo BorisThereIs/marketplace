@@ -1,8 +1,10 @@
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv()
+
+if os.environ.get('IS_DOCKER_ENV', False):
+    load_dotenv(dotenv_path=os.environ["DOCKER_ENV_FILE"], override=True)
 
 DATABASE = {
     'host': os.environ.get('POSTGRES_HOST', ''),

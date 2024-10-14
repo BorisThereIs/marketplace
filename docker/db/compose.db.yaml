@@ -1,0 +1,17 @@
+
+services:
+  db:
+    image: boristhereis/marketplace-db
+    pull_policy: missing
+    build:
+      context: ../..
+      dockerfile: ./docker/db/db.Dockerfile
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    # environment:
+    expose:
+      - 5432
+volumes:
+  db-data:

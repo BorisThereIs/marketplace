@@ -1,0 +1,19 @@
+include:
+  - ../db/compose.db.yaml
+  - ../rabbit/compose.rabbit.yaml
+
+services:
+  app:
+    image: boristhereis/marketplace:latest
+    pull_policy: missing
+    build:
+      context: ../..
+      dockerfile: ./docker/app/app.Dockerfile
+    ports:
+      - 8000:8000
+    environment:
+      - IS_DOCKER_ENV=True
+    depends_on:
+      - db
+      - rabbit
+    stop_signal: SIGTERM

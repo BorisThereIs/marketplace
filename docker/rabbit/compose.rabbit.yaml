@@ -1,0 +1,3 @@
+services:
+  rabbit:
+    image: rabbitmq:4.0.2-alpine

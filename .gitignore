@@ -163,3 +163,7 @@ cython_debug/
 
 # vscode specific
 .vscode
+
+# misc.
+dbpass.*
+rabbit_tut/
