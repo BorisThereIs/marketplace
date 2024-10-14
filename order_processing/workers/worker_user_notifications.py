@@ -4,16 +4,14 @@ import sys
 from dotenv import load_dotenv
 
 load_dotenv()
-sys.path.insert(1, os.environ.get('PROJECT_ROOT_DIR',
-                                  '/home/superuser/practice/projects/marketplace'))
+sys.path.insert(1, os.environ['PROJECT_ROOT_DIR'])
 
 from sqlalchemy import select
 
-from order_processing.consts import (EXCHANGE_USER_NOTIFICATIONS, QUEUE_NAME_MAPPING, QUEUE_USER_NOTIFICATIONS, 
-                    ROUTING_KEY_USER_NOTIFICATIONS)
+from order_processing.consts import QUEUE_USER_NOTIFICATIONS
 from models.user import User
 from utils import get_db_session
-from order_processing.utils import get_channel, send_email
+from order_processing.utils import send_email, consume_messages
 from models.order import Order
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
@@ -45,18 +43,8 @@ def send_notification(channel: BlockingChannel, method: Basic.Deliver, propertie
     session.close()
     channel.basic_ack(delivery_tag=method.delivery_tag)
 
-def consume_user_notifications():
-    channel = get_channel(exchange_name=EXCHANGE_USER_NOTIFICATIONS,
-                          exchange_type='direct',
-                          queue=QUEUE_NAME_MAPPING[QUEUE_USER_NOTIFICATIONS],
-                          routing_key=ROUTING_KEY_USER_NOTIFICATIONS)
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue=QUEUE_NAME_MAPPING[QUEUE_USER_NOTIFICATIONS],
-                          on_message_callback=send_notification)
-    
-    print(f'func: {sys._getframe().f_code.co_name}\n\tConsumer started.')
-    channel.start_consuming()
-
+def consume_user_notifications() -> None:
+    consume_messages(QUEUE_USER_NOTIFICATIONS, send_notification)
 
 if __name__ == '__main__':
     try:

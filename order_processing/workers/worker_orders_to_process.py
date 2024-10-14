@@ -4,16 +4,14 @@ import sys
 
 from dotenv import load_dotenv
 load_dotenv()
-sys.path.insert(1, os.environ.get('PROJECT_ROOT_DIR',
-                                  '/home/superuser/practice/projects/marketplace'))
+sys.path.insert(1, os.environ['PROJECT_ROOT_DIR'])
 
 from sqlalchemy import select
 
-from order_processing.consts import (EXCHANGE_ORDERS_TO_PROCESS, QUEUE_NAME_MAPPING, QUEUE_ORDERS_TO_PROCESS,
-                      QUEUE_USER_NOTIFICATIONS, ROUTING_KEY_ORDERS_TO_PROCESS)
+from order_processing.consts import (QUEUE_ORDERS_TO_PROCESS, QUEUE_USER_NOTIFICATIONS)
 from consts import ORDER_STATUS_NAME_MAPPING, ORDER_STATUS_PENDING_FULFILLMENT
 from utils import get_db_session
-from order_processing.utils import get_channel, publish_message
+from order_processing.utils import publish_message, consume_messages
 from models.order import Order
 from sqlalchemy.exc import SQLAlchemyError, DBAPIError
 from pika.adapters.blocking_connection import BlockingChannel
@@ -54,18 +52,8 @@ def process_order(channel: BlockingChannel, method: Basic.Deliver, properties, b
     session.close()
     channel.basic_ack(delivery_tag=method.delivery_tag)
 
-def consume_orders_to_process():
-    channel = get_channel(exchange_name=EXCHANGE_ORDERS_TO_PROCESS,
-                          exchange_type='direct',
-                          queue=QUEUE_NAME_MAPPING[QUEUE_ORDERS_TO_PROCESS],
-                          routing_key=ROUTING_KEY_ORDERS_TO_PROCESS)
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue=QUEUE_NAME_MAPPING[QUEUE_ORDERS_TO_PROCESS],
-                          on_message_callback=process_order)
-    
-    print(f'func: {sys._getframe().f_code.co_name}\n\tConsumer started.')
-    channel.start_consuming()
-
+def consume_orders_to_process() -> None:
+    consume_messages(QUEUE_ORDERS_TO_PROCESS, process_order)
 
 if __name__ == '__main__':
     try:

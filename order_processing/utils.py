@@ -1,13 +1,13 @@
 import sys
 import os
+from typing import Callable
 
 from pika import BlockingConnection, ConnectionParameters
 from pika.adapters.blocking_connection import BlockingChannel
 
 from dotenv import load_dotenv
 load_dotenv()
-sys.path.insert(1, os.environ.get('PROJECT_ROOT_DIR',
-                                  '/home/superuser/practice/projects/marketplace'))
+sys.path.insert(1, os.environ['PROJECT_ROOT_DIR'])
 
 from .consts import QUEUE_PARAMS_MAPPING, QUEUE_NAME_MAPPING
 from config import settings
@@ -51,6 +51,25 @@ def publish_message(queue_id: int, message: str):
           f'Sent message to queue {QUEUE_NAME_MAPPING[queue_id]}')
     
     channel.close()
+
+def consume_messages(queue_id: int, message_handler: Callable):
+    channel = get_channel(exchange_name=QUEUE_PARAMS_MAPPING[queue_id]['exchange_name'],
+                          exchange_type=QUEUE_PARAMS_MAPPING[queue_id]['exchange_type'],
+                          queue=QUEUE_PARAMS_MAPPING[queue_id]['queue_name'],
+                          routing_key=QUEUE_PARAMS_MAPPING[queue_id]['routing_key'])
+    channel.basic_qos(prefetch_count=1)
+    channel.basic_consume(queue=QUEUE_NAME_MAPPING[queue_id],
+                          on_message_callback=message_handler)
+    
+    print(f'func: {sys._getframe().f_code.co_name}\n\t'
+          f'Consumer for queue "{QUEUE_NAME_MAPPING[queue_id]}" has started.')
+    try:
+        channel.start_consuming()
+    except KeyboardInterrupt as e:
+        print(e)
+        channel.stop_consuming()
+    finally:
+        sys.exit()
 
 def send_email(email: str, message: str):
     """Imagine we send an email."""

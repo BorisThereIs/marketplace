@@ -4,18 +4,16 @@ import sys
 
 from dotenv import load_dotenv
 load_dotenv()
-sys.path.insert(1, os.environ.get('PROJECT_ROOT_DIR',
-                                  '/home/superuser/practice/projects/marketplace'))
+sys.path.insert(1, os.environ['PROJECT_ROOT_DIR'])
 
 from sqlalchemy import select
 
-from order_processing.consts import (EXCHANGE_ORDERS_TO_CREATE, QUEUE_NAME_MAPPING, QUEUE_ORDERS_TO_CREATE,
-                      QUEUE_ORDERS_TO_PROCESS, ROUTING_KEY_ORDERS_TO_CREATE)
+from order_processing.consts import (QUEUE_ORDERS_TO_CREATE, QUEUE_ORDERS_TO_PROCESS)
 from consts import ORDER_STATUS_PENDING_VALIDATION
 from models.product import Product
 import pydantic_models
 from utils import get_db_session
-from order_processing.utils import get_channel, publish_message
+from order_processing.utils import publish_message, consume_messages
 from models.order import Order, OrderLine, ShippingAddress
 from sqlalchemy.exc import SQLAlchemyError, DBAPIError
 from pika.adapters.blocking_connection import BlockingChannel
@@ -68,18 +66,8 @@ def create_order(channel: BlockingChannel, method: Basic.Deliver, properties, bo
     session.close()
     channel.basic_ack(delivery_tag=method.delivery_tag)
 
-def consume_orders_to_create():
-    channel = get_channel(exchange_name=EXCHANGE_ORDERS_TO_CREATE,
-                          exchange_type='direct',
-                          queue=QUEUE_NAME_MAPPING[QUEUE_ORDERS_TO_CREATE],
-                          routing_key=ROUTING_KEY_ORDERS_TO_CREATE)
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue=QUEUE_NAME_MAPPING[QUEUE_ORDERS_TO_CREATE],
-                          on_message_callback=create_order)
-    
-    print(f'func: {sys._getframe().f_code.co_name}\n\tConsumer started.')
-    channel.start_consuming()
-
+def consume_orders_to_create() -> None:
+    consume_messages(QUEUE_ORDERS_TO_CREATE, create_order)
 
 if __name__ == '__main__':
     try:
