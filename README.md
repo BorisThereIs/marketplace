@@ -2,9 +2,34 @@
 
 a simplified backend for a marketplace-like app.
 
+#### How to run backend components
+
+pull images from dockerhub:
+```bash
+docker compose -f ./docker/app/compose.app.yaml pull --include-deps
+```
+
+to run all components use a compose file from the pulled repo:
+```bash
+docker compose -f ./docker/app/compose.app.yaml up
+```
+
 #### Order processing flow
 
+Send a post request to this endpoint http://127.0.0.1:8000/api/v1/orders to create an order.
 
+POST request body:
+```json
+{
+    "user_id": 1,
+    "order_lines": [
+        {
+            "product_id": 1,
+            "quantity": 2
+        }
+    ]
+}
+```
 
 #### Alembic 
 
