@@ -16,6 +16,8 @@ docker compose -f ./docker/app/compose.app.yaml up
 
 #### Order processing flow
 
+![Order processing flow diagram](readme_assets/order-processing-flow-diagram.png)
+
 Send a post request to this endpoint http://127.0.0.1:8000/api/v1/orders to create an order.
 
 POST request body:
